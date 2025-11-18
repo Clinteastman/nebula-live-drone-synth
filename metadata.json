@@ -1,0 +1,5 @@
+{
+  "name": "Nebula Drone Synth",
+  "description": "A cinematic ambient drone synthesizer powered by Web Audio API and Gemini AI for patch generation.",
+  "requestFramePermissions": []
+}
