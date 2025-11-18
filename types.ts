@@ -1,48 +1,61 @@
-
 export enum Waveform {
   Sine = 'sine',
   Triangle = 'triangle',
   Sawtooth = 'sawtooth',
   Square = 'square',
+  Noise = 'noise',
 }
 
 export type LfoTarget = 'pitch' | 'cutoff' | 'amp' | 'pan';
 
+export interface ADSR {
+  attack: number;  // 0 to 2s
+  decay: number;   // 0 to 2s
+  sustain: number; // 0 to 1
+  release: number; // 0 to 5s
+}
+
 export interface OscillatorParams {
   id: number;
-  enabled: boolean; // New: allows muting/unmuting layers live
+  enabled: boolean;
   waveform: Waveform;
-  detune: number; // -1200 to 1200 cents
-  gain: number; // 0 to 1
-  octave: number; // -2 to 2
-  pan: number; // -1 to 1
+  detune: number;
+  gain: number;
+  octave: number;
+  pan: number;
   
+  // Envelopes
+  ampEnvelope: ADSR;
+
   // LFO
   lfoWaveform: Waveform;
-  lfoRate: number; // 0.1 to 20 Hz
-  lfoDepth: number; // 0 to 1
+  lfoRate: number;
+  lfoDepth: number;
   lfoTarget: LfoTarget;
 }
 
 export interface FilterParams {
-  cutoff: number; // 20Hz to 20000Hz
-  resonance: number; // 0 to 20
-  type: 'lowpass' | 'highpass' | 'bandpass';
+  cutoff: number;
+  resonance: number;
+  type: 'lowpass' | 'highpass' | 'bandpass' | 'notch' | 'peaking';
+  envelope: ADSR;
+  envDepth: number; // -10000 to 10000 (Hz modulation)
 }
 
 export interface DelayParams {
-  time: number; // 0 to 2 seconds
-  feedback: number; // 0 to 0.95
-  mix: number; // 0 to 1
+  time: number;
+  feedback: number;
+  mix: number;
 }
 
 export interface ReverbParams {
-  decay: number; // 1 to 10 seconds (simulated)
-  mix: number; // 0 to 1
+  decay: number;
+  mix: number;
 }
 
 export interface MasterParams {
-  gain: number; // 0 to 1
+  gain: number;
+  drive: number; // 0 to 1 (Distortion)
 }
 
 export interface SynthPatch {

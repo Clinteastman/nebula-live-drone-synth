@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type, SchemaType } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { SynthPatch, Waveform, AIPatchResponse } from '../types';
 
 // Initialize Gemini Client
@@ -23,7 +23,7 @@ export const generatePatch = async (prompt: string): Promise<AIPatchResponse> =>
               properties: {
                 id: { type: Type.INTEGER },
                 enabled: { type: Type.BOOLEAN },
-                waveform: { type: Type.STRING, enum: ["sine", "triangle", "sawtooth", "square"] },
+                waveform: { type: Type.STRING, enum: ["sine", "triangle", "sawtooth", "square", "noise"] },
                 detune: { type: Type.NUMBER },
                 gain: { type: Type.NUMBER },
                 octave: { type: Type.NUMBER },
@@ -32,6 +32,15 @@ export const generatePatch = async (prompt: string): Promise<AIPatchResponse> =>
                 lfoRate: { type: Type.NUMBER },
                 lfoDepth: { type: Type.NUMBER },
                 lfoTarget: { type: Type.STRING, enum: ["pitch", "cutoff", "amp", "pan"] },
+                ampEnvelope: {
+                    type: Type.OBJECT,
+                    properties: {
+                        attack: { type: Type.NUMBER },
+                        decay: { type: Type.NUMBER },
+                        sustain: { type: Type.NUMBER },
+                        release: { type: Type.NUMBER }
+                    }
+                }
               }
             }
           },
@@ -40,7 +49,17 @@ export const generatePatch = async (prompt: string): Promise<AIPatchResponse> =>
             properties: {
               cutoff: { type: Type.NUMBER },
               resonance: { type: Type.NUMBER },
-              type: { type: Type.STRING, enum: ["lowpass", "highpass", "bandpass"] },
+              type: { type: Type.STRING, enum: ["lowpass", "highpass", "bandpass", "notch", "peaking"] },
+              envDepth: { type: Type.NUMBER },
+              envelope: {
+                  type: Type.OBJECT,
+                  properties: {
+                      attack: { type: Type.NUMBER },
+                      decay: { type: Type.NUMBER },
+                      sustain: { type: Type.NUMBER },
+                      release: { type: Type.NUMBER }
+                  }
+              }
             }
           },
           delay: {
@@ -62,6 +81,7 @@ export const generatePatch = async (prompt: string): Promise<AIPatchResponse> =>
              type: Type.OBJECT,
              properties: {
                gain: { type: Type.NUMBER },
+               drive: { type: Type.NUMBER },
              }
           }
         }

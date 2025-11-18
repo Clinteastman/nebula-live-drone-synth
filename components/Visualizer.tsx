@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { audioEngine } from '../services/audioEngine';
 
 const Visualizer: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mode, setMode] = useState<'fft' | 'wave'>('fft');
 
   useEffect(() => {
     if (!isActive) return;
@@ -24,42 +25,68 @@ const Visualizer: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     const draw = () => {
       animationId = requestAnimationFrame(draw);
 
-      analyser.getByteFrequencyData(dataArray);
-
       ctx.fillStyle = 'rgb(15, 23, 42)'; // Match bg-slate-900
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let barHeight;
-      let x = 0;
+      if (mode === 'fft') {
+        analyser.getByteFrequencyData(dataArray);
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let barHeight;
+        let x = 0;
 
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i] / 1.5; // Scale down slightly
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = dataArray[i] / 1.5;
 
-        // Gradient color based on height/freq
-        const r = barHeight + 25 * (i / bufferLength);
-        const g = 250 * (i / bufferLength);
-        const b = 255; // Cyan tint
+          const r = barHeight + 25 * (i / bufferLength);
+          const g = 250 * (i / bufferLength);
+          const b = 255;
 
-        ctx.fillStyle = `rgba(${50}, ${g}, ${b}, ${barHeight / 255})`;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          ctx.fillStyle = `rgba(${50}, ${g}, ${b}, ${barHeight / 255})`;
+          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
 
-        x += barWidth + 1;
+          x += barWidth + 1;
+        }
+      } else {
+        analyser.getByteTimeDomainData(dataArray);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#22d3ee'; // Cyan
+        ctx.beginPath();
+
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * canvas.height / 2;
+
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+
+          x += sliceWidth;
+        }
+
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
       }
     };
 
     draw();
 
     return () => cancelAnimationFrame(animationId);
-  }, [isActive]);
+  }, [isActive, mode]);
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      width={800} 
-      height={150} 
-      className="w-full h-full rounded-xl bg-slate-900 border border-slate-800 shadow-inner opacity-80"
-    />
+    <div className="relative w-full h-full group cursor-pointer" onClick={() => setMode(m => m === 'fft' ? 'wave' : 'fft')}>
+        <canvas 
+          ref={canvasRef} 
+          width={800} 
+          height={150} 
+          className="w-full h-full rounded-xl bg-slate-900 border border-slate-800 shadow-inner opacity-80"
+        />
+        <div className="absolute top-2 right-2 text-[10px] font-mono text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity uppercase bg-slate-900/80 px-2 rounded">
+            {mode === 'fft' ? 'Spectrum' : 'Scope'}
+        </div>
+    </div>
   );
 };
 
